@@ -551,15 +551,15 @@ if (**p >= '0' && **p <= '9')
 
 int parse_power(const char **p, const char *line, long long line_start, Value *result, long long *error_pos)
 {
-     if (!parse_primary(
-            p,
-            line,
-            line_start,
-            result,
-            error_pos))
+     if (!parse_primary(p, line, line_start, result, error_pos))
     {
         return 0;
     }
+
+
+
+
+
 
     skip_spaces(p);
 
@@ -575,21 +575,24 @@ int parse_power(const char **p, const char *line, long long line_start, Value *r
 
         Value expo;
 
-        if (!parse_power(
-                p,
-                line,
-                line_start,
-                &expo,
-                error_pos))
+        if (!parse_power(p, line, line_start, &expo, error_pos))
         {
             return 0;
         }
+
+
+
+
 
         if (!expo.is_float && expo.int_value < 0)
         {
             *error_pos = line_start + (exponent_start - line);
             return 0;
         }
+
+
+
+
 
         if (!result->is_float && !expo.is_float)
         {
@@ -605,6 +608,11 @@ int parse_power(const char **p, const char *line, long long line_start, Value *r
             result->int_value = power_result;
             result->is_float = 0;
         }
+
+
+
+
+
         else
         {
             double base = value_to_double(*result);
@@ -612,16 +620,31 @@ int parse_power(const char **p, const char *line, long long line_start, Value *r
 
             double answer = pow(base, exp);
 
+
+
+            
            if (!isfinite(answer))
 {
     *error_pos = line_start + (operator_start - line);
     return 0;
 }
 
+
+
+
             result->float_value = answer;
             result->is_float = 1;
         }
+
+
+
+
     }
+
+
+
+
+
     return 1;
 }
 
@@ -638,16 +661,27 @@ int parse_term(const char **p, const char *line, long long line_start, Value *re
     return 0;
 }
 
+
+
+
     while (1)                  //endless loop
     {
         skip_spaces(p);
 
         char op = **p;
 
+
+
+
+
         if (op != '*' && op != '/')
         {
             break; // if it s not * or / , parse_term is finished
         }
+
+
+
+
 
         (*p)++;
 
@@ -659,6 +693,10 @@ int parse_term(const char **p, const char *line, long long line_start, Value *re
             return 0;
         }
 
+
+
+
+
         const char *operand_start = *p;
 
         Value value;
@@ -668,12 +706,21 @@ if (!parse_power( p, line, line_start, &value, error_pos)) //changed again from 
     return 0;
 }
 
+
+
+
+
       if (op == '*')
 {
     if (!result->is_float && !value.is_float)
     {
         result->int_value = result->int_value * value.int_value;
     }
+
+
+
+
+
     else
     {
         result->float_value =
@@ -681,10 +728,23 @@ if (!parse_power( p, line, line_start, &value, error_pos)) //changed again from 
 
         result->is_float = 1;
     }
+
+
+
+
+
 }
+
+
+
+
+
 else
 {
     double divisor = value_to_double(value);
+
+
+
 
     if (divisor == 0.0)
     {
@@ -692,10 +752,16 @@ else
         return 0;
     }
 
+
+
+
     if (!result->is_float && !value.is_float)
     {
         result->int_value = result->int_value / value.int_value;
     }
+
+
+
     else
     {
         result->float_value =
@@ -703,8 +769,20 @@ else
 
         result->is_float = 1;
     }
+
+
+
+
 }
+
+
+
     }
+
+
+
+
+
 
     return 1;
 }
@@ -729,6 +807,12 @@ int main(int argc, char *argv[])
     const char *outdir = NULL;
     const char *inputdir = NULL;
 
+
+
+
+
+
+
     if (argc == 1)
     {
         fprintf(stderr,
@@ -737,19 +821,36 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+
+
+
+
+
+
     for (int i = 1; i < argc; i++)
     {
+
+
+
         if (strcmp(argv[i], "-o") == 0 ||
             strcmp(argv[i], "--output-dir") == 0)
         {
+
+
+
             if (i + 1 >= argc)
             {
                 fprintf(stderr, "ERROR: Missing output directory\n");
                 return 1;
-            }
+            }   
+
+
 
             outdir = argv[++i];
         }
+
+
+
 
         else if (strcmp(argv[i], "-d") == 0 ||
                  strcmp(argv[i], "--dir") == 0)
@@ -763,22 +864,49 @@ int main(int argc, char *argv[])
             inputdir = argv[++i];
         }
 
+
+
+
+
+
         else if (argv[i][0] == '-')
         {
             fprintf(stderr, "ERROR: Unknown option: %s\n", argv[i]);
             return 1;
         }
 
+
+
+
+
         else
         {
             input_file = argv[i];
         }
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
 
     char default_outdir[600];
 
     if (outdir == NULL)
     {
+
+
+
+
         if (inputdir != NULL)
         {
             const char *dirname = strrchr(inputdir, '/');
@@ -799,6 +927,12 @@ int main(int argc, char *argv[])
                 dirname
             );
         }
+
+
+
+
+
+
         else if (input_file != NULL)
         {
             const char *filename = strrchr(input_file, '/');
@@ -830,14 +964,30 @@ int main(int argc, char *argv[])
                 base
             );
         }
+
+
+
+
         else
         {
             fprintf(stderr, "ERROR: Missing input\n");
             return 1;
         }
 
+
+
+
         outdir = default_outdir;
     }
+
+
+
+
+
+
+
+
+
 
     if (mkdir(outdir, 0777) != 0 && errno != EEXIST)
     {
@@ -845,16 +995,27 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+
+
+
     if (inputdir != NULL)
     {
         return process_directory(inputdir, outdir);
     }
+
+
+
+
 
     if (input_file == NULL)
     {
         fprintf(stderr, "ERROR: Missing input file\n");
         return 1;
     }
+
+
+
+
 
     return process_file(input_file, outdir);
 }
